@@ -1,0 +1,33 @@
+--- Radio Database ---
+--- Listado de entidades ---
+
+--- Tabla paciente ---
+id
+dni
+firstName
+lastName
+observaciones
+
+--- Tabla estudio ---
+id
+paciente_id
+fecha
+observaciones
+
+
+--- Tabla dosis ---
+estdudio_id
+zona
+tipo
+dpi
+ctl
+dosis
+
+--- Tabla zona ---
+id
+name
+
+--- Tabla factor ---
+id
+zona_id
+value
