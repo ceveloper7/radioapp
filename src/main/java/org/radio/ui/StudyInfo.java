@@ -1,6 +1,5 @@
 package org.radio.ui;
 
-import org.jdatepicker.JDatePanel;
 import org.jdatepicker.JDatePicker;
 import org.jdatepicker.UtilDateModel;
 
@@ -19,7 +18,8 @@ public class StudyInfo extends JDialog {
     private JTextField txtPatientName = new JTextField(FIELDLENGTH);
 
     private JLabel lblStudyDate = new JLabel("Fecha");
-    JDatePicker datePicker = new JDatePicker();
+    UtilDateModel dateModel = new UtilDateModel();
+    JDatePicker datePicker = new JDatePicker(dateModel);
 
     private JLabel lblStudyName = new JLabel("Estudio");
     private JComboBox cboStudy;
@@ -174,9 +174,9 @@ public class StudyInfo extends JDialog {
         txtDlp.setText(String.valueOf(dlp));
         txtEffect.setText(String.valueOf(effect));
 
-        UtilDateModel dateModel = new UtilDateModel();
-        JDatePanel datePanel = new JDatePanel(date);
-        dateModel.setDate(1990,8,24);
+
+        dateModel.setDate(date.getYear(), date.getMonth(), date.getDate());
+        //JDatePanel datePanel = new JDatePanel(dateModel);
         dateModel.setSelected(true);
 
         int n = 0;
