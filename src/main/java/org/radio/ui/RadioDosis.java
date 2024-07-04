@@ -14,7 +14,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.Instant;
 import java.util.*;
 import java.util.List;
 
@@ -54,9 +53,9 @@ public class RadioDosis extends JPanel {
 
     private class StudyModel{
         private String[] columnNames = {
-                "DNI",
+                "  DNI  ",
                 "APELLIDOS Y  NOMBRES",
-                "FECHA",
+                "  FECHA  ",
                 "ESTUDIO",
                 "SERIE",
                 "CTDI",
@@ -247,8 +246,14 @@ public class RadioDosis extends JPanel {
     }
 
     private void editRow(){
-        StudyForm form = new StudyForm(SwingUtilities.getWindowAncestor(this));
-        form.setVisible(true);
+        int row = table.getSelectedRow();
+        if(row >= 0){
+            StudyData d = model.getRow(row);
+
+            StudyInfo form = new StudyInfo(SwingUtilities.getWindowAncestor(this), model.studyNameMap, model.serieNameMap);
+            form.setData(d.patientDni, d.patientName, d.studyDate, d.zoneId, d.serieId, d.ctdi, d.dlp, d.dosisEffect, d.observaions);
+            form.setVisible(true);
+        }
     }
 
     private void initComponents(){
@@ -308,6 +313,7 @@ public class RadioDosis extends JPanel {
         int w8 = fm.stringWidth(model.getColumnName(1))+ fm.getMaxAdvance();
         col = table.getColumnModel().getColumn(1);
         col.setPreferredWidth(w8);
+        col.setMinWidth(w8);
 
         JScrollPane scrollPane = new JScrollPane(table);
         JPanel lowerPanel = new JPanel();

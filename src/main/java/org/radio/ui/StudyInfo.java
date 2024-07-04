@@ -7,9 +7,10 @@ import org.jdatepicker.UtilDateModel;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.util.Date;
 import java.util.Map;
 
-public class StudyForm extends JDialog {
+public class StudyInfo extends JDialog {
     private JSeparator separator;
     private static final int	FIELDLENGTH = 15;
     private JLabel lblPatientDni = new JLabel("D.N.I.");
@@ -23,9 +24,9 @@ public class StudyForm extends JDialog {
     JDatePicker datePicker = new JDatePicker(dateModel);
 
     private JLabel lblStudyName = new JLabel("Estudio");
-    private JComboBox cboStudy = new JComboBox();
+    private JComboBox cboStudy;
     private JLabel lblSerie = new JLabel("Serie");
-    private JComboBox cboSerie = new JComboBox();
+    private JComboBox cboSerie;
     private JLabel lblctdi = new JLabel("Dosis ctdi");
     private JTextField txtCtdi = new JTextField(FIELDLENGTH);
     private JLabel lblDlp = new JLabel("Dosis dlp");
@@ -34,7 +35,8 @@ public class StudyForm extends JDialog {
     private JTextField txtEffect = new JTextField(FIELDLENGTH);
 
 
-    private JTextArea txtObs = new JTextArea();
+    private JTextArea txtObs = new JTextArea(5, 35);
+
     private boolean okSelected = false;
 
     private Map<Integer, String> patientMap;
@@ -45,21 +47,17 @@ public class StudyForm extends JDialog {
     private Integer studyIndex[];
     private Integer serieIndex[];
 
-    public StudyForm(Window owner){
-        initComponents();
-        setModal(true);
-    }
-    public StudyForm(Window owner, Map<Integer, String> patientMap, Map<Integer, String> studyMap, Map<Integer, String> serieMap) {
+    public StudyInfo(Window owner, Map<Integer, String> studyMap, Map<Integer, String> serieMap) {
         super(owner, "Estudio Info");
-        this.patientMap = patientMap;
+        //this.patientMap = patientMap;
         this.studyMap = studyMap;
         this.serieMap = serieMap;
 
-        patientIndex = new Integer[patientMap.size()];
-        int p = 0;
-        for(Integer i : patientMap.keySet()) {
-            patientIndex[p++] = i;
-        }
+//        patientIndex = new Integer[patientMap.size()];
+//        int p = 0;
+//        for(Integer i : patientMap.keySet()) {
+//            patientIndex[p++] = i;
+//        }
 
         studyIndex = new Integer[studyMap.size()];
         int z = 0;
@@ -84,6 +82,36 @@ public class StudyForm extends JDialog {
         JPanel mainPanel = new JPanel(gl);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
+        cboStudy = new JComboBox(new DefaultComboBoxModel(){
+            @Override
+            public int getSize(){
+                return studyMap.size() + 1;
+            }
+
+            @Override
+            public Object getElementAt(int index){
+                if(index == 0){
+                    return "- Select one -";
+                }
+                return studyMap.get(studyIndex[index-1]);
+            }
+        });
+
+        cboSerie = new JComboBox(new DefaultComboBoxModel(){
+            @Override
+            public int getSize(){
+                return serieMap.size() + 1;
+            }
+
+            @Override
+            public Object getElementAt(int index){
+                if(index == 0){
+                    return "- Select one -";
+                }
+                return serieMap.get(serieIndex[index-1]);
+            }
+        });
+
         JLabel sectionLabel = new JLabel("Datos del estudio");
         sectionLabel.setForeground(titledBorder.getTitleColor());
         separator = new JSeparator();
@@ -94,6 +122,7 @@ public class StudyForm extends JDialog {
                 ,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 5, 0, 10), 0, 0));
         mainPanel.add(lblPatientDni,  new GridBagConstraints(0, 14, 1, 1, 0.0, 0.0
                 ,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 5, 2, 5), 0, 0));
+        txtPatientDni.setEditable(false);
         mainPanel.add(txtPatientDni,  new GridBagConstraints(1, 14, 1, 1, 0.0, 0.0
                 ,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 0, 2, 5), 0, 0));
         mainPanel.add(lblPatientName,	new GridBagConstraints(0, 15, 1, 1, 0.0, 0.0
@@ -119,6 +148,7 @@ public class StudyForm extends JDialog {
                 ,GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(2, 5, 2, 0), 0, 0));
         mainPanel.add(lblEffect,   new GridBagConstraints(4, 17, 1, 1, 0.0, 0.0
                 ,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(2, 5, 2, 5), 0, 0));
+        txtEffect.setEditable(false);
         mainPanel.add(txtEffect,   new GridBagConstraints(5, 17, 1, 1, 0.5, 0.0
                 ,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(2, 5, 2, 0), 0, 0));
         mainPanel.add(lblSerie,     new GridBagConstraints(0, 18, 1, 1, 0.0, 0.0
@@ -142,6 +172,38 @@ public class StudyForm extends JDialog {
 
         pack();
         setLocationRelativeTo(getOwner());
+    }
+
+    public void setData(int dni, String name, Date date, int study, int serie, double cdti, double dlp, double effect, String obs){
+        txtPatientDni.setText(String.valueOf(dni));
+        txtPatientName.setText(name);
+        txtCtdi.setText(String.valueOf(cdti));
+        txtDlp.setText(String.valueOf(dlp));
+        txtEffect.setText(String.valueOf(effect));
+        dateModel.setDate(date.getYear(), date.getMonth(),date.getDay());
+
+        int n = 0;
+        for(int idStudy : studyIndex){
+            if(idStudy == study){
+                break;
+            }
+            n++;
+        }
+        if(n < studyIndex.length){
+            cboStudy.setSelectedIndex(n+1);
+        }
+
+        n = 0;
+        for(int idSerie : serieIndex){
+            if(idSerie == serie){
+                break;
+            }
+            n++;
+        }
+        if(n < serieIndex.length){
+            cboSerie.setSelectedIndex(n+1);
+        }
+
     }
 
 }
