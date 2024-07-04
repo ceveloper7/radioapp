@@ -1,12 +1,15 @@
 package org.radio.ui;
 
+import org.jdatepicker.JDatePanel;
 import org.jdatepicker.JDatePicker;
 import org.jdatepicker.UtilDateModel;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.util.Date;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.util.Calendar;
 import java.util.Map;
 
 public class StudyInfo extends JDialog {
@@ -167,16 +170,15 @@ public class StudyInfo extends JDialog {
         setLocationRelativeTo(getOwner());
     }
 
-    public void setData(int dni, String name, Date date, int study, int serie, double cdti, double dlp, double effect, String obs){
+    public void setData(int dni, String name, LocalDate date, int study, int serie, double cdti, double dlp, double effect, String obs){
         txtPatientDni.setText(String.valueOf(dni));
         txtPatientName.setText(name);
         txtCtdi.setText(String.valueOf(cdti));
         txtDlp.setText(String.valueOf(dlp));
         txtEffect.setText(String.valueOf(effect));
 
-
-        dateModel.setDate(date.getYear(), date.getMonth(), date.getDate());
-        //JDatePanel datePanel = new JDatePanel(dateModel);
+        dateModel.setDate(date.getYear(), date.getMonth().getValue(), date.getDayOfMonth());
+        JDatePanel datePanel = new JDatePanel(dateModel);
         dateModel.setSelected(true);
 
         int n = 0;

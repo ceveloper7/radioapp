@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class RadioDosis extends JPanel {
         private int studyId;
         private int patientDni;
         private String patientName;
-        private Date studyDate;
+        private LocalDate studyDate;
         private int zoneId;
         private int serieId;
         private double ctdi;
@@ -113,9 +114,7 @@ public class RadioDosis extends JPanel {
                     study.studyId = rs.getInt("id");
                     study.patientDni =  rs.getInt("dni");
                     study.patientName = rs.getString("name");
-                    Date date = new Date();
-                    date = rs.getDate("study_date");
-                    study.studyDate = date;
+                    study.studyDate = rs.getDate("study_date").toLocalDate();
                     study.zoneId = rs.getInt("zone_id");
                     study.serieId = rs.getInt("serie_id");
                     study.ctdi = rs.getDouble("dosis_ctdi");
