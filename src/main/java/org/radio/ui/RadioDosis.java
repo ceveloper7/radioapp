@@ -6,14 +6,10 @@ import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.awt.event.*;
+import java.sql.*;
+import java.sql.Date;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.List;
@@ -87,6 +83,7 @@ public class RadioDosis extends JPanel {
                         FROM
                                 patient p
                         RIGHT JOIN study s on s.patient_dni = p.dni
+                        WHERE s.status=1
                         ORDER BY s.id
                         """;
 
@@ -178,18 +175,117 @@ public class RadioDosis extends JPanel {
             return studySerieName;
         }
 
-        private boolean insertStudy(int dni, Date studyDate, int studyZoneId, int studySerieId, double ctdi, double dlp,
-                double dosisEffective, String observations){
-            return false;
+        private boolean insertStudy(int dni, java.sql.Date studyDate, int studyZoneId, int studySerieId, double ctdi, double dlp,
+                                    double dosisEffective, String observations, String patientName){
+            int studyId = -1;
+            String sqlInsert = """
+                    INSERT INTO study(study_date, observations, dosis_ctdi, dosis_dlp, dosis_effective, patient_id, zone_id, serie_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """;
+            try(Connection conn = CConnection.connection();
+                PreparedStatement pstmt = conn.prepareStatement(sqlInsert, Statement.RETURN_GENERATED_KEYS)){
+
+                pstmt.setDate(1, studyDate);
+                pstmt.setString(2, observations);
+                pstmt.setDouble(3, ctdi);
+                pstmt.setDouble(4, dlp);
+                pstmt.setDouble(5, dosisEffective);
+                pstmt.setInt(6, dni);
+                pstmt.setInt(7, studyZoneId);
+                pstmt.setInt(8, studySerieId);
+                pstmt.executeUpdate();
+                ResultSet rs = pstmt.getGeneratedKeys();
+                rs.next();
+                studyId = rs.getInt(1);
+                rs.close();
+            }
+            catch (SQLException ex){
+                System.out.println(ex.getClass().getName() + " generated: " + ex.getMessage());
+                return false;
+            }
+
+            StudyData study = new StudyData();
+            study.studyId = studyId;
+            study.patientDni = dni;
+            study.patientName = patientName;
+            study.studyDate = studyDate.toLocalDate();
+            study.zoneId = studyZoneId;
+            study.serieId = studySerieId;
+            study.ctdi = ctdi;
+            study.dlp = dlp;
+            study.dosisEffect = dosisEffective;
+            study.observaions = observations;
+            int row = model.add(study);
+
+            for(StudyModelListener listener : listeners){
+                listener.dataInsert(study, row);
+            }
+            return true;
         }
 
         private boolean updateStudy(int studyId, int dni, Date studyDate, int studyZoneId, int StudySerieId,
-                                    double ctdi, double dlp, double dosisEffective, String observations){
-            return false;
+                                    double ctdi, double dlp, double dosisEffective, String observations, String patientName){
+            String sqlUpdate = """
+                    UPDATE study set study_date=?, set observations=?, set dosis_ctdi=?, set dosis_dlp=?, 
+                                 set zone_id=?, set serie_id=?
+                    WHERE id=?
+                    """;
+            int row = findRow(studyId);
+            if(row == -1){
+                return false;
+            }
+            StudyData d = getRow(studyId);
+
+            try(Connection conn = CConnection.connection();
+                PreparedStatement pstmt = conn.prepareStatement(sqlUpdate)){
+                pstmt.setDate(1, studyDate);
+                pstmt.setString(2, observations);
+                pstmt.setDouble(3, ctdi);
+                pstmt.setDouble(4, dlp);
+                pstmt.setInt(5, studyZoneId);
+                pstmt.setInt(6, StudySerieId);
+                pstmt.executeUpdate();
+            }
+            catch(SQLException ex){
+                System.out.println(ex.getClass().getName() + " generated: " + ex.getMessage());
+                return false;
+            }
+
+            d.studyDate = studyDate.toLocalDate();
+            d.observaions = observations;
+            d.ctdi = ctdi;
+            d.dlp = dlp;
+            d.zoneId = studyZoneId;
+            d.serieId = StudySerieId;
+
+            for(StudyModelListener listener : listeners){
+                listener.dataUpdate(d, row);
+            }
+            return true;
         }
 
-        private boolean deleteStudy(int id_Study){
-            return false;
+        private boolean deleteStudy(int studyId){
+            int row = findRow(studyId);
+            if(row == -1){
+                return false;
+            }
+
+            StudyData d = getRow(row);
+            try(Connection conn = CConnection.connection();
+                PreparedStatement pstmt = conn.prepareStatement("UPDATE study set status=0 WHERE id=?")){
+                pstmt.setInt(1, studyId);
+                pstmt.executeUpdate();
+            }
+            catch(SQLException ex){
+                System.out.println(ex.getClass().getName() + " generated: " + ex.getMessage());
+                return false;
+            }
+
+            data.remove(d);
+            for(StudyModelListener listener : listeners){
+                listener.dataDelete(d, row);
+            }
+            return true;
         }
 
         private void addListener(StudyModelListener listener){
@@ -253,6 +349,10 @@ public class RadioDosis extends JPanel {
             form.setData(d.patientDni, d.patientName, d.studyDate, d.zoneId, d.serieId, d.ctdi, d.dlp, d.dosisEffect, d.observaions);
             form.setTitle("Estudio: " + d.patientName + " - " + d.studyDate);
             form.setVisible(true);
+            if(form.okWasSelected()){
+                Date dt = new Date(d.studyDate.getYear(), d.studyDate.getMonth().getValue(), d.studyDate.getDayOfMonth());
+                model.updateStudy(d.studyId, d.patientDni, dt, d.zoneId, d.serieId, d.ctdi, d.dlp, d.dosisEffect, d.observaions, d.patientName);
+            }
         }
     }
 
@@ -319,12 +419,56 @@ public class RadioDosis extends JPanel {
         JPanel lowerPanel = new JPanel();
         lowerPanel.setLayout(new FlowLayout());
 
-//        lowerPanel.add(btnAdd);
-//        lowerPanel.add(btnEdit);
-//        lowerPanel.add(btnDelete);
+        btnAdd = new JButton("Nuevo estudio");
+        btnEdit = new JButton("Modificar estudio");
+        btnDelete = new JButton("Eliminar estudio");
+
+        btnAdd.addActionListener((e) -> {
+            StudyForm form = new StudyForm(SwingUtilities.getWindowAncestor(this), model.studyNameMap, model.serieNameMap);
+            form.setVisible(true);
+        });
+
+        btnEdit.addActionListener((e -> {
+            editRow();
+        }));
+
+        lowerPanel.add(btnAdd);
+        lowerPanel.add(btnEdit);
+        lowerPanel.add(btnDelete);
 
         add(scrollPane, BorderLayout.CENTER);
         add(lowerPanel, BorderLayout.SOUTH);
+
+        disabledButtons();
+
+        model.addListener(new StudyModelListener() {
+            @Override
+            public void dataInsert(StudyData data, int row) {
+                dataModel.fireTableRowsInserted(row, row);
+            }
+
+            @Override
+            public void dataUpdate(StudyData data, int row) {
+                dataModel.fireTableRowsUpdated(row, row);
+            }
+
+            @Override
+            public void dataDelete(StudyData data, int row) {
+                dataModel.fireTableRowsDeleted(row, row);
+            }
+        });
+    }
+
+    private void disabledButtons(){
+        btnAdd.setEnabled(false);
+        btnEdit.setEnabled(false);
+        btnDelete.setEnabled(false);
+    }
+
+    private void enabledButtons(){
+        btnAdd.setEnabled(true);
+        btnEdit.setEnabled(true);
+        btnDelete.setEnabled(true);
     }
 
     private void loadData(){
@@ -333,6 +477,7 @@ public class RadioDosis extends JPanel {
                 model.loadData();
                 SwingUtilities.invokeLater(()->{
                     dataModel.fireTableDataChanged();
+                    enabledButtons();
                 });
             }catch (SQLException ex){
                 SwingUtilities.invokeLater(()->{
@@ -348,7 +493,7 @@ public class RadioDosis extends JPanel {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             RadioDosis panel = new RadioDosis();
-            JFrame frame = new JFrame("Radio dosis");
+            JFrame frame = new JFrame("Listado de Estudios");
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             frame.setContentPane(panel);
             frame.addWindowListener(new WindowAdapter() {

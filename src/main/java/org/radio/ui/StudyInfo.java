@@ -7,12 +7,13 @@ import org.jdatepicker.UtilDateModel;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.sql.Date;
+import java.awt.event.ActionListener;
 import java.time.LocalDate;
-import java.util.Calendar;
 import java.util.Map;
 
 public class StudyInfo extends JDialog {
+    private JButton btnAccept;
+    private JButton btnCancel;
     private JSeparator separator;
     private static final int	FIELDLENGTH = 15;
     private JLabel lblPatientDni = new JLabel("D.N.I.");
@@ -44,7 +45,6 @@ public class StudyInfo extends JDialog {
     private Map<Integer, String> studyMap;
     private Map<Integer, String> serieMap;
 
-    private Integer patientIndex[];
     private Integer studyIndex[];
     private Integer serieIndex[];
 
@@ -77,6 +77,11 @@ public class StudyInfo extends JDialog {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
         JPanel lowerPanel = new JPanel(gl);
         lowerPanel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        JPanel btnPanel = new JPanel(gl);
+        btnPanel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+
+        btnAccept = new JButton("Aceptar");
+        btnCancel = new JButton("Cancelar");
 
         cboStudy = new JComboBox(new DefaultComboBoxModel(){
             @Override
@@ -155,16 +160,39 @@ public class StudyInfo extends JDialog {
         sectionLabel = new JLabel("Observaciones");
         sectionLabel.setForeground(titledBorder.getTitleColor());
         separator = new JSeparator();
-        lowerPanel.add(sectionLabel,    new GridBagConstraints(0, 19, 6, 1, 0.0, 0.0
+        mainPanel.add(sectionLabel,    new GridBagConstraints(0, 19, 6, 1, 0.0, 0.0
                 ,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(15, 5, 0, 0), 0, 0));
-        lowerPanel.add(separator,    new GridBagConstraints(0, 20, 7, 1, 1.0, 0.0
+        mainPanel.add(separator,    new GridBagConstraints(0, 20, 7, 1, 1.0, 0.0
                 ,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 5, 0, 10), 0, 0));
 
-        lowerPanel.add(scroll,   new GridBagConstraints(1, 21, 1, 1, 0.5, 0.0
+        mainPanel.add(scroll,   new GridBagConstraints(1, 21, 1, 1, 0.5, 0.0
                 ,GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(5, 5, 2, 0), 0, 0));
 
+        //grap extra space when window is maximized
+        JPanel filler = new JPanel();
+        filler.setOpaque(false);
+        filler.setBorder(null);
+        mainPanel.add(filler,    		new GridBagConstraints(0, 23, 1, 1, 0.0, 1.0
+                ,GridBagConstraints.WEST, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, 0));
+
+        btnAccept.addActionListener((e)-> {
+            okSelected = true;
+            setVisible(false);
+        });
+
+        btnCancel.addActionListener((e -> {
+            okSelected = false;
+            setVisible(false);
+        }));
+
+        btnPanel.add(btnAccept, new GridBagConstraints(1, 24, 1, 1, 0.0, 0.0
+                , GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(15, 5, 10, 5), 0, 0));
+        btnPanel.add(btnCancel,         new GridBagConstraints(3, 24, 2, 1, 0.0, 0.0
+                ,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(15, 5, 10, 5), 0, 0));
+
         add(mainPanel, BorderLayout.CENTER);
-        add(lowerPanel, BorderLayout.SOUTH);
+        //add(lowerPanel, BorderLayout.SOUTH);
+        add(btnPanel, BorderLayout.SOUTH);
 
         pack();
         setLocationRelativeTo(getOwner());
@@ -202,7 +230,12 @@ public class StudyInfo extends JDialog {
         if(n < serieIndex.length){
             cboSerie.setSelectedIndex(n+1);
         }
-
     }
+
+    public boolean okWasSelected(){
+        return okSelected;
+    }
+
+    // getter and setter
 
 }
