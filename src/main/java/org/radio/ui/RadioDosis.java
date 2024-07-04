@@ -61,7 +61,7 @@ public class RadioDosis extends JPanel {
                 "SERIE",
                 "CTDI",
                 "DLP",
-                "D-EFECT"
+                "D-EFECT."
         };
 
         private List<StudyData> data;
@@ -205,22 +205,20 @@ public class RadioDosis extends JPanel {
             StudyData d = model.getRow(rowIndex);
             switch (columnIndex){
                 case 0:
-                    return d.studyId;
-                case 1:
                     return d.patientDni;
-                case 2:
+                case 1:
                     return d.patientName;
-                case 3:
+                case 2:
                     return d.studyDate;
-                case 4:
+                case 3:
                     return model.getStudyZoneLabel(d.zoneId);
-                case 5:
+                case 4:
                     return model.getStudySerieLabel(d.serieId);
-                case 6:
+                case 5:
                     return d.ctdi;
-                case 7:
+                case 6:
                     return d.dlp;
-                case 8:
+                case 7:
                     return d.dosisEffect;
                 default:
                     return "?";
@@ -249,11 +247,12 @@ public class RadioDosis extends JPanel {
     }
 
     private void editRow(){
-        //todo
+        StudyForm form = new StudyForm(SwingUtilities.getWindowAncestor(this));
+        form.setVisible(true);
     }
 
     private void initComponents(){
-        setPreferredSize(new Dimension(1800, 600));
+        setPreferredSize(new Dimension(800, 600));
         setBorder(BorderFactory.createEmptyBorder(16,16,16,16));
         setLayout(new BorderLayout());
 
@@ -281,9 +280,34 @@ public class RadioDosis extends JPanel {
         col.setPreferredWidth(w2);
         col.setMinWidth(w2);
 
-        int w3 = getPreferredSize().width - w1 - w2;
-        col = table.getColumnModel().getColumn(1);
+        int w3 = fm.stringWidth(model.getColumnName(3)) + fm.getMaxAdvance();
+        col = table.getColumnModel().getColumn(3);
         col.setPreferredWidth(w3);
+        col.setMinWidth(w3);
+
+        int w4 = fm.stringWidth(model.getColumnName(4)) + fm.getMaxAdvance();
+        col = table.getColumnModel().getColumn(4);
+        col.setPreferredWidth(w4);
+        col.setMinWidth(w4);
+
+        int w5 = fm.stringWidth(model.getColumnName(5)) + fm.getMaxAdvance();
+        col = table.getColumnModel().getColumn(5);
+        col.setPreferredWidth(w5);
+        col.setMinWidth(w5);
+
+        int w6 = fm.stringWidth(model.getColumnName(6)) + fm.getMaxAdvance();
+        col = table.getColumnModel().getColumn(6);
+        col.setPreferredWidth(w6);
+        col.setMinWidth(w6);
+
+        int w7 = fm.stringWidth(model.getColumnName(7)) + fm.getMaxAdvance();
+        col = table.getColumnModel().getColumn(7);
+        col.setPreferredWidth(w7);
+        col.setMinWidth(w7);
+
+        int w8 = fm.stringWidth(model.getColumnName(1))+ fm.getMaxAdvance();
+        col = table.getColumnModel().getColumn(1);
+        col.setPreferredWidth(w8);
 
         JScrollPane scrollPane = new JScrollPane(table);
         JPanel lowerPanel = new JPanel();
@@ -297,6 +321,24 @@ public class RadioDosis extends JPanel {
         add(lowerPanel, BorderLayout.SOUTH);
     }
 
+    private void loadData(){
+        Thread t = new Thread(()->{
+            try{
+                model.loadData();
+                SwingUtilities.invokeLater(()->{
+                    dataModel.fireTableDataChanged();
+                });
+            }catch (SQLException ex){
+                SwingUtilities.invokeLater(()->{
+                    JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(this), "Error. No se puede" +
+                            " obtener la informacion de la base de datos", "Error", JOptionPane.ERROR_MESSAGE);
+                });
+                System.out.println(ex.getClass().getName() + " generated: " + ex.getMessage());
+            }
+        });
+        t.start();
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             RadioDosis panel = new RadioDosis();
@@ -306,7 +348,7 @@ public class RadioDosis extends JPanel {
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowOpened(WindowEvent e) {
-                    //panel.loadData();
+                    panel.loadData();
                 }
             });
             frame.pack();

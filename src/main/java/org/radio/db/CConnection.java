@@ -17,7 +17,7 @@ public class CConnection {
         } catch (ClassNotFoundException ex) {
             logger.log(Level.SEVERE,"No se encontro la clase com.mysql.cj.jdbc.Driver");
         }
-        Connection conn = DriverManager.getConnection(URL, "root", "root");
+        Connection conn = DriverManager.getConnection(URL, "barcvilla", "b4000$.");
         return conn;
     }
 }
