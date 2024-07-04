@@ -252,6 +252,7 @@ public class RadioDosis extends JPanel {
 
             StudyInfo form = new StudyInfo(SwingUtilities.getWindowAncestor(this), model.studyNameMap, model.serieNameMap);
             form.setData(d.patientDni, d.patientName, d.studyDate, d.zoneId, d.serieId, d.ctdi, d.dlp, d.dosisEffect, d.observaions);
+            form.setTitle("Estudio: " + d.patientName + " - " + d.studyDate);
             form.setVisible(true);
         }
     }

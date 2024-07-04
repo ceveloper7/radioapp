@@ -19,9 +19,7 @@ public class StudyInfo extends JDialog {
     private JTextField txtPatientName = new JTextField(FIELDLENGTH);
 
     private JLabel lblStudyDate = new JLabel("Fecha");
-    UtilDateModel dateModel = new UtilDateModel();
-    JDatePanel datePanel = new JDatePanel(dateModel);
-    JDatePicker datePicker = new JDatePicker(dateModel);
+    JDatePicker datePicker = new JDatePicker();
 
     private JLabel lblStudyName = new JLabel("Estudio");
     private JComboBox cboStudy;
@@ -34,8 +32,8 @@ public class StudyInfo extends JDialog {
     private JLabel lblEffect = new JLabel("D. Efectiva");
     private JTextField txtEffect = new JTextField(FIELDLENGTH);
 
-
     private JTextArea txtObs = new JTextArea(5, 35);
+    private JScrollPane scroll = new JScrollPane(txtObs);
 
     private boolean okSelected = false;
 
@@ -49,15 +47,8 @@ public class StudyInfo extends JDialog {
 
     public StudyInfo(Window owner, Map<Integer, String> studyMap, Map<Integer, String> serieMap) {
         super(owner, "Estudio Info");
-        //this.patientMap = patientMap;
         this.studyMap = studyMap;
         this.serieMap = serieMap;
-
-//        patientIndex = new Integer[patientMap.size()];
-//        int p = 0;
-//        for(Integer i : patientMap.keySet()) {
-//            patientIndex[p++] = i;
-//        }
 
         studyIndex = new Integer[studyMap.size()];
         int z = 0;
@@ -81,6 +72,8 @@ public class StudyInfo extends JDialog {
         GridBagLayout gl = new GridBagLayout();
         JPanel mainPanel = new JPanel(gl);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        JPanel lowerPanel = new JPanel(gl);
+        lowerPanel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
         cboStudy = new JComboBox(new DefaultComboBoxModel(){
             @Override
@@ -159,16 +152,16 @@ public class StudyInfo extends JDialog {
         sectionLabel = new JLabel("Observaciones");
         sectionLabel.setForeground(titledBorder.getTitleColor());
         separator = new JSeparator();
-        mainPanel.add(sectionLabel,    new GridBagConstraints(0, 19, 6, 1, 0.0, 0.0
+        lowerPanel.add(sectionLabel,    new GridBagConstraints(0, 19, 6, 1, 0.0, 0.0
                 ,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(15, 5, 0, 0), 0, 0));
-        mainPanel.add(separator,    new GridBagConstraints(0, 20, 7, 1, 1.0, 0.0
+        lowerPanel.add(separator,    new GridBagConstraints(0, 20, 7, 1, 1.0, 0.0
                 ,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 5, 0, 10), 0, 0));
 
-        mainPanel.add(txtObs,   new GridBagConstraints(1, 21, 1, 1, 0.5, 0.0
+        lowerPanel.add(scroll,   new GridBagConstraints(1, 21, 1, 1, 0.5, 0.0
                 ,GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(5, 5, 2, 0), 0, 0));
 
         add(mainPanel, BorderLayout.CENTER);
-        //add(bottomPanel, BorderLayout.SOUTH);
+        add(lowerPanel, BorderLayout.SOUTH);
 
         pack();
         setLocationRelativeTo(getOwner());
@@ -180,7 +173,11 @@ public class StudyInfo extends JDialog {
         txtCtdi.setText(String.valueOf(cdti));
         txtDlp.setText(String.valueOf(dlp));
         txtEffect.setText(String.valueOf(effect));
-        dateModel.setDate(date.getYear(), date.getMonth(),date.getDay());
+
+        UtilDateModel dateModel = new UtilDateModel();
+        JDatePanel datePanel = new JDatePanel(date);
+        dateModel.setDate(1990,8,24);
+        dateModel.setSelected(true);
 
         int n = 0;
         for(int idStudy : studyIndex){
