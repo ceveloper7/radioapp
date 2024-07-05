@@ -9,7 +9,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
 import java.sql.Date;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.List;
@@ -123,6 +122,7 @@ public class RadioDosis extends JPanel {
                     }
                     data.add(study);
                 }
+                rs.close();
                 System.out.println(data.size() + " rows read");
                 stmt.close();
             }
@@ -238,7 +238,7 @@ public class RadioDosis extends JPanel {
 
             try(Connection conn = CConnection.connection();
                 PreparedStatement pstmt = conn.prepareStatement(sqlUpdate)){
-                pstmt.setDate(1, new Date(studyDate.getYear(), studyDate.getMonthValue(), studyDate.getDayOfMonth()));
+                pstmt.setDate(1, Date.valueOf(studyDate));
                 if(observations != null){
                     pstmt.setString(2, observations);
                 }else{

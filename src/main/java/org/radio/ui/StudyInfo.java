@@ -181,10 +181,10 @@ public class StudyInfo extends JDialog {
             setVisible(false);
         });
 
-        btnCancel.addActionListener((e -> {
+        btnCancel.addActionListener((e) -> {
             okSelected = false;
             setVisible(false);
-        }));
+        });
 
         btnPanel.add(btnAccept, new GridBagConstraints(1, 24, 1, 1, 0.0, 0.0
                 , GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(15, 5, 10, 5), 0, 0));
@@ -206,7 +206,7 @@ public class StudyInfo extends JDialog {
         txtDlp.setText(String.valueOf(dlp));
         txtEffect.setText(String.valueOf(effect));
 
-        dateModel.setDate(date.getYear(), date.getMonth().getValue(), date.getDayOfMonth());
+        dateModel.setDate(date.getYear(), date.getMonth().getValue()-1, date.getDayOfMonth());
         JDatePanel datePanel = new JDatePanel(dateModel);
         dateModel.setSelected(true);
 
@@ -269,6 +269,6 @@ public class StudyInfo extends JDialog {
     }
 
     public LocalDate getStudyDate(){
-       return LocalDate.of(datePicker.getModel().getYear(), datePicker.getModel().getMonth(), datePicker.getModel().getDay());
+       return LocalDate.of(datePicker.getModel().getYear(), datePicker.getModel().getMonth()+1, datePicker.getModel().getDay());
     }
 }
