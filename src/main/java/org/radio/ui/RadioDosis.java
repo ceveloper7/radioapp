@@ -39,7 +39,7 @@ public class RadioDosis extends JPanel {
         private double ctdi;
         private double dlp;
         private double dosisEffect;
-        private String observaions;
+        private String observations;
     }
 
     private interface StudyModelListener{
@@ -119,7 +119,7 @@ public class RadioDosis extends JPanel {
                     study.dosisEffect = rs.getDouble("dosis_effective");
                     String observations = rs.getString("observations");
                     if(observations == null){
-                        study.observaions = "Sin descripcion";
+                        study.observations = "Sin descripcion";
                     }
                     data.add(study);
                 }
@@ -214,7 +214,7 @@ public class RadioDosis extends JPanel {
             study.ctdi = ctdi;
             study.dlp = dlp;
             study.dosisEffect = dosisEffective;
-            study.observaions = observations;
+            study.observations = observations;
             int row = model.add(study);
 
             for(StudyModelListener listener : listeners){
@@ -239,20 +239,27 @@ public class RadioDosis extends JPanel {
             try(Connection conn = CConnection.connection();
                 PreparedStatement pstmt = conn.prepareStatement(sqlUpdate)){
                 pstmt.setDate(1, studyDate);
-                pstmt.setString(2, observations);
+                if(observations != null){
+                    pstmt.setString(2, observations);
+                }else{
+                    pstmt.setString(2,"");
+                }
+
                 pstmt.setDouble(3, ctdi);
                 pstmt.setDouble(4, dlp);
                 pstmt.setInt(5, studyZoneId);
                 pstmt.setInt(6, StudySerieId);
+                pstmt.setInt(7, studyId);
                 pstmt.executeUpdate();
             }
             catch(SQLException ex){
-                System.out.println(ex.getClass().getName() + " generated: " + ex.getMessage());
+                ex.printStackTrace();
+                //System.out.println(ex.getClass().getName() + " generated: " + ex.getMessage());
                 return false;
             }
 
             d.studyDate = studyDate.toLocalDate();
-            d.observaions = observations;
+            d.observations = observations;
             d.ctdi = ctdi;
             d.dlp = dlp;
             d.zoneId = studyZoneId;
@@ -346,12 +353,13 @@ public class RadioDosis extends JPanel {
             StudyData d = model.getRow(row);
 
             StudyInfo form = new StudyInfo(SwingUtilities.getWindowAncestor(this), model.studyNameMap, model.serieNameMap);
-            form.setData(d.patientDni, d.patientName, d.studyDate, d.zoneId, d.serieId, d.ctdi, d.dlp, d.dosisEffect, d.observaions);
+            form.setData(d.patientDni, d.patientName, d.studyDate, d.zoneId, d.serieId, d.ctdi, d.dlp, d.dosisEffect, d.observations);
             form.setTitle("Estudio: " + d.patientName + " - " + d.studyDate);
             form.setVisible(true);
             if(form.okWasSelected()){
-                Date dt = new Date(d.studyDate.getYear(), d.studyDate.getMonth().getValue(), d.studyDate.getDayOfMonth());
-                model.updateStudy(d.studyId, d.patientDni, dt, d.zoneId, d.serieId, d.ctdi, d.dlp, d.dosisEffect, d.observaions, d.patientName);
+                //Date dt = new Date(d.studyDate.getYear(), d.studyDate.getMonth().getValue(), d.studyDate.getDayOfMonth());
+                model.updateStudy(d.studyId, d.patientDni, form.getStudyDate(), form.getId_studyZone(), form.getId_serie(),
+                        form.getCtdi(), form.getDlp(), form.getEffect(), form.getObs(), d.patientName);
             }
         }
     }

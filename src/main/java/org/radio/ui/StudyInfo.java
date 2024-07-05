@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Map;
 
@@ -237,5 +238,37 @@ public class StudyInfo extends JDialog {
     }
 
     // getter and setter
+    public int getId_studyZone(){
+        int idx = cboStudy.getSelectedIndex();
+        if (idx > 0){
+            return studyIndex[idx-1];
+        }
+        return -1;
+    }
 
+    public int getId_serie(){
+        int idx = cboSerie.getSelectedIndex();
+        if (idx > 0){
+            return serieIndex[idx-1];
+        }
+        return -1;
+    }
+
+    public double getCtdi(){
+        return Double.parseDouble(txtCtdi.getText());
+    }
+
+    public double getDlp(){
+        return Double.parseDouble(txtDlp.getText());
+    }
+    public double getEffect(){
+        return Double.parseDouble(txtEffect.getText());
+    }
+    public String getObs(){
+        return txtObs.getText();
+    }
+
+    public java.sql.Date getStudyDate(){
+        return (java.sql.Date) datePicker.getModel().getValue();
+    }
 }
