@@ -8,8 +8,8 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.sql.Date;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.Map;
 
 public class StudyInfo extends JDialog {
@@ -268,7 +268,7 @@ public class StudyInfo extends JDialog {
         return txtObs.getText();
     }
 
-    public java.sql.Date getStudyDate(){
-        return (java.sql.Date) datePicker.getModel().getValue();
+    public LocalDate getStudyDate(){
+       return LocalDate.of(datePicker.getModel().getYear(), datePicker.getModel().getMonth(), datePicker.getModel().getDay());
     }
 }

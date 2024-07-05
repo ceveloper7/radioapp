@@ -223,11 +223,11 @@ public class RadioDosis extends JPanel {
             return true;
         }
 
-        private boolean updateStudy(int studyId, int dni, Date studyDate, int studyZoneId, int StudySerieId,
+        private boolean updateStudy(int studyId, int dni, LocalDate studyDate, int studyZoneId, int StudySerieId,
                                     double ctdi, double dlp, double dosisEffective, String observations, String patientName){
             String sqlUpdate = """
-                    UPDATE study set study_date=?, set observations=?, set dosis_ctdi=?, set dosis_dlp=?, 
-                                 set zone_id=?, set serie_id=?
+                    UPDATE study set study_date=?, observations=?, dosis_ctdi=?, dosis_dlp=?, 
+                                 zone_id=?, serie_id=?
                     WHERE id=?
                     """;
             int row = findRow(studyId);
@@ -238,7 +238,7 @@ public class RadioDosis extends JPanel {
 
             try(Connection conn = CConnection.connection();
                 PreparedStatement pstmt = conn.prepareStatement(sqlUpdate)){
-                pstmt.setDate(1, studyDate);
+                pstmt.setDate(1, new Date(studyDate.getYear(), studyDate.getMonthValue(), studyDate.getDayOfMonth()));
                 if(observations != null){
                     pstmt.setString(2, observations);
                 }else{
@@ -258,7 +258,7 @@ public class RadioDosis extends JPanel {
                 return false;
             }
 
-            d.studyDate = studyDate.toLocalDate();
+            d.studyDate = studyDate;
             d.observations = observations;
             d.ctdi = ctdi;
             d.dlp = dlp;
