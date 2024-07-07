@@ -42,9 +42,9 @@ public class RadioDosis extends JPanel {
     }
 
     private interface StudyModelListener{
-        public void dataInsert(StudyData data, int row);
-        public void dataUpdate(StudyData data, int row);
-        public void dataDelete(StudyData data, int row);
+        public void dataInserted(StudyData data, int row);
+        public void dataUpdated(StudyData data, int row);
+        public void dataDeleted(StudyData data, int row);
     }
 
     private class StudyModel{
@@ -218,7 +218,7 @@ public class RadioDosis extends JPanel {
             int row = model.add(study);
 
             for(StudyModelListener listener : listeners){
-                listener.dataInsert(study, row);
+                listener.dataInserted(study, row);
             }
             return true;
         }
@@ -266,7 +266,7 @@ public class RadioDosis extends JPanel {
             d.serieId = StudySerieId;
 
             for(StudyModelListener listener : listeners){
-                listener.dataUpdate(d, row);
+                listener.dataUpdated(d, row);
             }
             return true;
         }
@@ -290,7 +290,7 @@ public class RadioDosis extends JPanel {
 
             data.remove(d);
             for(StudyModelListener listener : listeners){
-                listener.dataDelete(d, row);
+                listener.dataDeleted(d, row);
             }
             return true;
         }
@@ -440,6 +440,18 @@ public class RadioDosis extends JPanel {
             editRow();
         }));
 
+        btnDelete.addActionListener((e)->{
+            if (JOptionPane.showConfirmDialog(SwingUtilities.getWindowAncestor(this), "¿Deseas borrar este registro?", "Borrar registro", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+                // si no quiere borrar, no hacemos nada
+                return;
+            }
+            int row = table.getSelectedRow();
+            if(row >= 0){
+                StudyData d = model.getRow(row);
+                model.deleteStudy(d.studyId);
+            }
+        });
+
         lowerPanel.add(btnAdd);
         lowerPanel.add(btnEdit);
         lowerPanel.add(btnDelete);
@@ -451,17 +463,17 @@ public class RadioDosis extends JPanel {
 
         model.addListener(new StudyModelListener() {
             @Override
-            public void dataInsert(StudyData data, int row) {
+            public void dataInserted(StudyData data, int row) {
                 dataModel.fireTableRowsInserted(row, row);
             }
 
             @Override
-            public void dataUpdate(StudyData data, int row) {
+            public void dataUpdated(StudyData data, int row) {
                 dataModel.fireTableRowsUpdated(row, row);
             }
 
             @Override
-            public void dataDelete(StudyData data, int row) {
+            public void dataDeleted(StudyData data, int row) {
                 dataModel.fireTableRowsDeleted(row, row);
             }
         });
