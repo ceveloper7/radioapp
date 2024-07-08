@@ -48,7 +48,7 @@ public class InfoStudy extends JPanel{
         initComponents();
     }
 
-    private class StudyData {
+    private class StudyList {
         private int id_study;
         private LocalDate studyDate;
         private int patientDni;
@@ -59,16 +59,16 @@ public class InfoStudy extends JPanel{
     // interface que informa cambios en el modelo
     private interface CatalogModelListener {
         // pasamos el objeto CompanyData y la fila segun su operacion
-        public void dataInserted(StudyData data, int row);
-        public void dataUpdated(StudyData data, int row);
-        public void dataDeleted(StudyData data, int row);
+        public void dataInserted(StudyList data, int row);
+        public void dataUpdated(StudyList data, int row);
+        public void dataDeleted(StudyList data, int row);
     }
 
     // clase que maneja los datos y separamos la funcionalidad
     private class CatalogModel {
         private String columnNames[] = {"FECHA ESTUDIO", "APELLIDOS Y NOMBRES", "    D.N.I PACIENTE"};
         //private Map<Integer, String> companyStatusMap;
-        private List<StudyData> data;
+        private List<StudyList> data;
 
         // informamos cambios en el modelo
         private List<CatalogModelListener> listeners;
@@ -99,7 +99,7 @@ public class InfoStudy extends JPanel{
             // leemos todas las companias
             ResultSet rs = stmt.executeQuery("select s.id, s.study_date, s.patient_dni, concat(p.last_name, ' ', p.first_name) as name from patient p right join study s on s.patient_dni = p.dni order by s.study_date desc");
             while (rs.next()) {
-                StudyData company = new StudyData();
+                StudyList company = new StudyList();
                 company.id_study = rs.getInt("id");
                 company.studyDate = rs.getDate("study_date").toLocalDate();
                 company.patientDni = rs.getInt("patient_dni");
@@ -130,12 +130,12 @@ public class InfoStudy extends JPanel{
         }
 
         // dado un numero de fila retorna un objeto CompanyData que corresponde a la fila
-        private StudyData getRow(int index) {
+        private StudyList getRow(int index) {
             return data.get(index);
         }
 
         // agregamos un company a la coleccion y retornamos el numero de fila donde fue agregado
-        private int add(StudyData company) {
+        private int add(StudyList company) {
             data.add(company);
             return data.size()-1;
         }
@@ -143,7 +143,7 @@ public class InfoStudy extends JPanel{
         // dado un id_company, conocemos que fila ocupa
         private int findRow(int id_company) {
             int row = 0;
-            for (StudyData c : data) {
+            for (StudyList c : data) {
                 if (c.id_study == id_company)
                     return row;
                 row++;
@@ -181,7 +181,7 @@ public class InfoStudy extends JPanel{
                 return false;
             }
 
-            StudyData c = new StudyData();
+            StudyList c = new StudyList();
             c.id_study = id_company;
 //            c.studyDate = symbol;
 //            c.patientDni = name;
@@ -199,7 +199,7 @@ public class InfoStudy extends JPanel{
             int row = model.findRow(id_company);
             if (row == -1)
                 return false;
-            StudyData c = getRow(row);
+            StudyList c = getRow(row);
 
             try (Connection conn = CConnection.connection()) {
                 PreparedStatement pstmt = conn.prepareStatement("update company set symbol=?, name=?, id_companyStatus=? where id_company=?");
@@ -231,7 +231,7 @@ public class InfoStudy extends JPanel{
             int row = findRow(id_company);
             if (row == -1)
                 return false;
-            StudyData c = getRow(row);
+            StudyList c = getRow(row);
 
             try (Connection conn = CConnection.connection()) {
                 PreparedStatement pstmt = conn.prepareStatement("delete from company where id_company=?");
@@ -258,7 +258,7 @@ public class InfoStudy extends JPanel{
     private class TModel extends AbstractTableModel {
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            StudyData d = model.getRow(rowIndex);
+            StudyList d = model.getRow(rowIndex);
             switch(columnIndex) {
                 case 0:
                     return d.studyDate;
@@ -296,7 +296,7 @@ public class InfoStudy extends JPanel{
     private void editRow() {
         int row = table.getSelectedRow();
         if (row >= 0) {
-            StudyData d = model.getRow(row);
+            StudyList d = model.getRow(row);
 
 //            CompanyForm form = new CompanyForm(SwingUtilities.getWindowAncestor(this), model.companyStatusMap);
 //            form.setData(d.symbol, d.companyName, d.id_companyStatus);
@@ -363,7 +363,7 @@ public class InfoStudy extends JPanel{
             }
             int row = table.getSelectedRow();
             if (row >= 0) {
-                StudyData d = model.getRow(row);
+                StudyList d = model.getRow(row);
                 model.deleteData(d.id_study);
             }
         });
@@ -379,15 +379,15 @@ public class InfoStudy extends JPanel{
         //
         model.addListener(new CatalogModelListener() {
             @Override
-            public void dataInserted(StudyData data, int row) {
+            public void dataInserted(StudyList data, int row) {
                 dataModel.fireTableRowsInserted(row, row);
             }
             @Override
-            public void dataUpdated(StudyData data, int row) {
+            public void dataUpdated(StudyList data, int row) {
                 dataModel.fireTableRowsUpdated(row, row);
             }
             @Override
-            public void dataDeleted(StudyData data, int row) {
+            public void dataDeleted(StudyList data, int row) {
                 dataModel.fireTableRowsDeleted(row, row);
             }
         });
